@@ -1,5 +1,5 @@
 # Compton-IBIS
-python notebooks for analysis of INTEGRAL/IBIS Compton data, obtained from the Compton pipeline (not included here).
+This python notebooks was made for polarization analysis of INTEGRAL/IBIS Compton data, obtained from the Compton pipeline (not included here).
 
 Required libraries: numpy, pandas, astropy, tqdm, matplotlib, scipy, lmfit.
 
@@ -7,8 +7,10 @@ Required libraries: numpy, pandas, astropy, tqdm, matplotlib, scipy, lmfit.
 
 The saved_pola_df contains raw fluxes for different sources.
 
-The first step is to choose the src name (ex: crab). The scw_file_name_list will contain the name of your runs (ex: ['all_2023']).
+The first step is to choose src (short-hand of the source name), while the scw_file_name_list will contain the name of your runs.
 
-The next step allows you to make more selections on the scw you will use (date, angle, etc…).
+So far the only available data is for the 2023 outburst of MQ Swift J1727.8-1613 (see Bouchet et al. 2024, A&A). More examples will be added in the future (Crab, Cygnus X-1).
 
-The last step will build the polarigram and compute the associated Polarization Angle (PA) and Fraction (PF). This can be done for every energy bands and displayed on a plot.
+The next step allows you to make more selections on the scw you will use (date, off-axis angle, revolutions, etc…).
+
+The last step will build the polarigram and compute the associated Polarization Angle (PA) and Fraction (PF). This can be done for different energy bands and displayed on a plot.
