@@ -9,7 +9,7 @@ The saved_pola_df contains raw fluxes for different sources.
 
 The first step is to choose src (short-hand of the source name), while the scw_file_name_list will contain the name of your runs.
 
-So far the only available data is for the 2023 outburst of MQ Swift J1727.8-1613 (see Bouchet et al. 2024, A&A). More examples will be added in the future (Crab, Cygnus X-1).
+So far the only available data is for the 2023 outburst of MQ Swift J1727.8-1613 (see Bouchet et al. 2024, https://doi.org/10.1051/0004-6361/202450826). More examples will be added in the future (Crab, Cygnus X-1).
 
 The next step allows you to make more selections on the scw you will use (date, off-axis angle, revolutions, etc…).
 
