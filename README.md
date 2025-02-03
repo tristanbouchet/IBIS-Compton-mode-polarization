@@ -1,5 +1,4 @@
-# Compton-IBIS
-This python notebooks was made for polarization analysis of INTEGRAL/IBIS Compton data, obtained from the Compton pipeline (not included here).
+This python notebooks was made for polarization analysis of pre-processed INTEGRAL/IBIS Compton data, obtained from the Compton pipeline (not included here).
 
 Required libraries: numpy, pandas, astropy, tqdm, matplotlib, scipy, lmfit.
 
