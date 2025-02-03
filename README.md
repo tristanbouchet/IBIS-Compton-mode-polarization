@@ -13,3 +13,5 @@ So far the only available data is for the 2023 outburst of MQ Swift J1727.8-1613
 The next step allows you to make more selections on the scw you will use (date, off-axis angle, revolutions, etc…).
 
 The last step will build the polarigram and compute the associated Polarization Angle (PA) and Fraction (PF). This can be done for different energy bands and displayed on a plot.
+
+NB: Some results might vary from reference papers since IBIS calibration files have been updated (especially after 2020).
