@@ -41,7 +41,6 @@ def charge_df(src, scw_file_name_list, saved_pola_folder='saved_pola_df', resp_d
     # infer number of polarization bin from columns
     df_pola_scw['scw_id']=df_pola_scw.apply(lambda x:x.SCW[:-4],axis=1)
     df_pola_scw['SCW_ORDER']=df_pola_scw.apply(lambda x:int(x.SCW[4:8]),axis=1)
-    # df_pola_scw = df_pola_scw.set_index('SCW')
     df_pola_scw['ISOT']=df_pola_scw.apply(lambda x:np.datetime64(x.ISOT),axis=1)
     df_pola_scw['YEAR']=df_pola_scw.apply(lambda x:x.ISOT.year,axis=1)
     df_pola_scw['MONTH']=df_pola_scw.apply(lambda x:x.ISOT.month,axis=1)
@@ -85,14 +84,14 @@ def sum_scw_df(df, all_band_names, spicorr, compnorm, n_pola_bands):
     ''' compute the average flux/error from the scw rate df '''
     full_expo_time=df.EXPO.sum()
     all_pola_dico={'simple':{},'simple_clean':{}, 'pond':{}, 'pond_clean':{}}
-
+    if len(df)==0:
+        raise Exception('No data selected! (empty df)')
+    
     for b in all_band_names:
         flux, flux_err=[],[]
         for p in range(n_pola_bands):
             name=b+'_'+str(p)
             if spicorr=='auto': # with a time dependent spicorr value
-                # df[name+'_count']= df.apply(lambda x:compnorm*x[name]*x.EXPO-x['spicorr']*x[name+'_spurf']*x['ISGRI_EXPO'], axis=1)
-                # df[name+'_count_err']= df.apply(lambda x:np.sqrt((compnorm*x[name+'_err']*x.EXPO)**2 + (x['spicorr']*x[name+'_spurf_err']*x['ISGRI_EXPO'])**2), axis=1)
                 df[name+'_count']= df.apply(lambda x:x['compnorm']*x[name]*x.EXPO-x['spicorr']*x[name+'_spurf']*x['ISGRI_EXPO'], axis=1)
                 df[name+'_count_err']= df.apply(lambda x:np.sqrt((x['compnorm']*x[name+'_err']*x.EXPO)**2 + (x['spicorr']*x[name+'_spurf_err']*x['ISGRI_EXPO'])**2), axis=1)
             else: # with unique spicorr

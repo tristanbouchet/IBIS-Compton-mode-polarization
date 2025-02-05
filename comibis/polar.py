@@ -21,59 +21,9 @@ def p_to_nsigma(p_unpola):
 
 def sin_pola(x,C,a0,phi0):
     '''theoretical polarigram model'''
-    return C*(1+a0*np.cos(2*(x-phi0)*(np.pi/180)))
+    return C * (1 + a0 * np.cos(2 * (x - phi0) * (np.pi / 180) ) )
 
-# def pola_select(df_pola_all_scw, column_name, select_list, n_pola_bands, all_band_names, pola_dico_name, select_names=None, verbose=True,soft='old',spi_norm=.9,comp_norm=1.,
-#                 sigma_threshold=2.5,SNR_threshold=12,pa_mod='PA_ref0',off_angle=5.,folded=1,calc_spicorr=False):
-#     '''select from df by a certain column (year or rev) and fit polarigram'''
-    
-#     list_pola_select=[]
-#     for i,sel in enumerate(select_list):
-#         if verbose:
-#             print('\n\n*** -------------------------------------------------------------------------\n',sel)
-#         if select_names and verbose: print('grouping name:', select_names[i])
-#         df=df_pola_all_scw[df_pola_all_scw[column_name].isin(sel)]
-#         df=df[df.ANGLE<off_angle]
-#         all_pola_dico,_ = sum_scw_df(df, all_band_names, spicorr, compnorm, n_pola_bands)
-#         # make_pola(df, bands, n_pola_bands, spi_norm, comp_norm=1, verbose=True)
-#         print(pola_dico_name)
-#         pola_dico=all_pola_dico[pola_dico_name]
-#         try:  #pola_dico,bands,verbose=True, weighted=True, full_360=1,article=False, pa_mod='PA_ref0'
-#             result,a100,SNR, df_spec_born=fit_pola(all_pola_dico[pola_dico_name],all_band_names,verbose=verbose,weighted=False,folded=folded,pa_mod=pa_mod)
-#             p_higher, sigma_higher = proba_higher(result,a100,n_pola_bands, verbose=False)
-#             lolim=0
-#             print(sigma_higher)
-#             start,end=df.ISOT.min(), df.ISOT.max()
-#             isot_diff=(end-start)
-#             isot_mean=start+isot_diff/2
-#             flux=df_spec_born.Flux.sum()
-
-#             if  SNR>SNR_threshold:
-#                 ampli=result.params.get('a0').value*result.params.get('C').value
-#                 ampli_err= ampli* np.sqrt((result.params.get('a0').stderr/result.params.get('a0').value)**2+(result.params.get('C').stderr/result.params.get('C').value)**2)
-#                 if sigma_higher>=sigma_threshold:
-#                     uplim=0
-#                     a_0=result.best_values['a0']
-#                     PA = phi_to_pa(result.best_values['phi0'], pa_mod)
-#                 else:
-#                     uplim=1
-#                     a_0 = a0_upper_lim(result,a100,n_pola_bands,p=0.01,verbose=verbose)
-#                     PA = np.nan
-
-#                 list_pola_select.append([sel,isot_mean, isot_diff/2, int(df.EXPO.sum()/1000),SNR,
-#                         PA, result.params.get('phi0').stderr, a_0/a100,result.params.get('a0').stderr/a100,
-#                         result.redchi,ampli,ampli_err,flux,uplim,lolim])
-#             else:
-#                 list_pola_select.append([sel,isot_mean, isot_diff/2, int(df.EXPO.sum()/1000),SNR,
-#                         None, None, None,None, None,None,None,flux,None,None])
-#         except ValueError:
-#             #print('nan value in fit for '+src+' '+sel)
-#             continue
-#     return pd.DataFrame(list_pola_select, columns=[column_name,'ISOT','ISOT_diff', 'Expo (ks)','SNR' ,'PA','PA_err',
-#                         'PF','PF_err','red Chi2','ampli','ampli_err','flux','uplim','lolims'])#,dtype={'uplim':'bool'} 
-
-
-class Polarigram: # use this for superclass?
+class Polarigram:
     '''polarigram = flux per radiant as a function of azimuthal scattering angle, for every energy band found'''
 
     def __init__(self, df_scw, all_band_names, angle_max):
@@ -223,12 +173,12 @@ class Polarigram: # use this for superclass?
             x_model_360=np.linspace(np.min(x_pola), 360, num=500)
             fig, ax = plt.subplots(figsize=(8,5))
             label_font=15
-            label_fit='PA = {0:.1f} ± {1:.1f} °\nPF = {0:.2f} ± {1:.2f} %\nSNR = {2:.1f}'.format(PA, PA_err, PF*100, PF_err*100, SNR)
+            label_fit='PA = {:.1f} ± {:.1f} °\nPF = {:.2f} ± {:.2f} %\nSNR = {:.1f}'.format(PA, PA_err, PF*100, PF_err*100, SNR)
             label_data=''
             ax.axhline(y=result.best_values['C'],color='grey',ls='--')
             ax.axhline(y=0,color='k')
-            if folded:
-                ax.errorbar(x=np.concatenate((x_pola,(x_pola+180))), y=np.concatenate((y,y)), # duplicates the [0,pi] polarigram to be on [0,2*pi]
+            if folded: # duplicates the [0,pi] polarigram to be on [0,2*pi]
+                ax.errorbar(x=np.concatenate((x_pola,(x_pola+180))), y=np.concatenate((y,y)), 
                             yerr=np.concatenate((y_err,y_err)), xerr=pola_width/2, fmt='k.', label=label_data) 
                 ax.plot(x_model_360, result.eval(x=x_model_360), 'r-', label=label_fit)
             else:
@@ -308,6 +258,4 @@ class Polarigram: # use this for superclass?
             ax[i].tick_params(which='both', labelsize=16)
             if plot_grid==True: ax[i].grid(True);ax[i].grid(True)
             if plot_scale=='log': ax[i].set_xscale('log');ax[i].set_xscale('log')
-
-        #ax[0].set_title('{0} polarigram parameters with energy'.format(src))
 
