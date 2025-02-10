@@ -20,9 +20,9 @@ def mjd_to_isot(row):
 ############### DataFrame managment ###############
 
 def combine_df(src, scw_file_name_list, saved_pola_folder,  save_name=None):
-    df_pola_scw=pd.concat([pd.read_csv('{}/{}_{}_pola.csv'.format(saved_pola_folder, src,scw_file_name),
+    df_pola_scw=pd.concat([pd.read_csv(f'{saved_pola_folder}/{src}_{scw_file_name}_pola.csv',
                     dtype={'SCW':'str','REV':'str'}) for scw_file_name in scw_file_name_list]) # charge all df in a list and concat them
-    if save_name: df_pola_scw.to_csv('{}/{}_{}_pola.csv'.format(saved_pola_folder,src, save_name))
+    if save_name: df_pola_scw.to_csv(f'{saved_pola_folder}/{src}_{save_name}_pola.csv')
     return df_pola_scw
 
 def save_pre_2020(src, scw_file_name_list, saved_pola_folder, save_name,year=2020):
@@ -31,26 +31,27 @@ def save_pre_2020(src, scw_file_name_list, saved_pola_folder, save_name,year=202
     df_pola_scw['ISOT']=df_pola_scw.apply(lambda x:np.datetime64(x.ISOT),axis=1)
     df_pola_scw['YEAR']=df_pola_scw.apply(lambda x:x.ISOT.year,axis=1)
     df_pre2020 = df_pola_scw[df_pola_scw.YEAR<year]
-    df_pre2020.to_csv('{}/{}_{}_pola.csv'.format(saved_pola_folder,src,save_name))
+    df_pre2020.to_csv(f'{saved_pola_folder}/{src}_{save_name}_pola.csv')
 
 def charge_df(src, scw_file_name_list, saved_pola_folder='saved_pola_df', resp_dir=None, spicorr_file=None,
               plot=True, verbose=True):
     '''charge csv files of a source into dataframe'''
     df_pola_scw = combine_df(src, scw_file_name_list, saved_pola_folder, save_name=None)
     all_band_names=pd.unique([c.split('_')[0] for c in df_pola_scw.columns if '-' in c])
-    # infer number of polarization bin from columns
+    df_pola_scw['REVINT']=np.int64(df_pola_scw.REV)
     df_pola_scw['scw_id']=df_pola_scw.apply(lambda x:x.SCW[:-4],axis=1)
     df_pola_scw['SCW_ORDER']=df_pola_scw.apply(lambda x:int(x.SCW[4:8]),axis=1)
     df_pola_scw['ISOT']=df_pola_scw.apply(lambda x:np.datetime64(x.ISOT),axis=1)
     df_pola_scw['YEAR']=df_pola_scw.apply(lambda x:x.ISOT.year,axis=1)
     df_pola_scw['MONTH']=df_pola_scw.apply(lambda x:x.ISOT.month,axis=1)
     if spicorr_file: # add a time-dependent spicorr and compnorm value in the df according to the year
-        df_spicorr = pd.read_csv('{}/{}'.format(resp_dir, spicorr_file))
-        df_pola_scw['spicorr']= df_pola_scw.apply(lambda x:df_spicorr.spicorr[(x.YEAR>=df_spicorr.YEAR_START)&(x.YEAR<=df_spicorr.YEAR_END)].iloc[0],axis=1)
-        df_pola_scw['compnorm']= df_pola_scw.apply(lambda x:df_spicorr.compnorm[(x.YEAR>=df_spicorr.YEAR_START)&(x.YEAR<=df_spicorr.YEAR_END)].iloc[0],axis=1)
+        df_spicorr = pd.read_csv(f'{resp_dir}/{spicorr_file}')
+        calib_col = [c.split('_')[0] for c in df_spicorr.columns if '_START' in c][0] # infer the column (REV, YEAR, ...) used for calibration validity
+        df_pola_scw['spicorr']= df_pola_scw.apply(lambda x:df_spicorr.spicorr[(x[calib_col]>=df_spicorr[calib_col+'_START'])&(x[calib_col]<=df_spicorr[calib_col+'_END'])].iloc[0],axis=1)
+        df_pola_scw['compnorm']= df_pola_scw.apply(lambda x:df_spicorr.compnorm[(x[calib_col]>=df_spicorr[calib_col+'_START'])&(x[calib_col]<=df_spicorr[calib_col+'_END'])].iloc[0],axis=1)
     
     if verbose:
-        print('{0} scw found'.format(len(df_pola_scw)))
+        print(f'{len(df_pola_scw)} scw found')
         print(all_band_names)
     if plot:
         if len(df_pola_scw.YEAR.unique())<3: df_pola_scw.groupby('REV').REV.count().plot(kind="bar") # if only 1 year of data, plots the revs histogram
@@ -75,7 +76,7 @@ def select_by_scw(df, scw_folder='', scw_file_list=[]):
     ''' select scw in the df by their names, using an external file containing a list of scw (with or without the .001)'''
     all_scw=[] 
     for scw_file in scw_file_list:
-        with open('{}/{}'.format(scw_folder, scw_file),'r') as f:
+        with open(f'{scw_folder}/{scw_file}','r') as f:
             all_scw+=f.read().splitlines()
     all_scw=[scw.split('.')[0] for scw in all_scw]
     return df[df.scw_id.isin(all_scw)]

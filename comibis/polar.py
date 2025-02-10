@@ -34,7 +34,7 @@ class Polarigram:
 
     def import_prf(self, pulsefrac_dir='compton_responses', pulsefrac_file='comps-prf-1.txt'):
         '''import the polarization response file that contains a100 = a100(E)'''
-        pulsefrac_path= '{}/{}'.format(pulsefrac_dir, pulsefrac_file)
+        pulsefrac_path= f'{pulsefrac_dir}/{pulsefrac_file}'
         self.df_prf=pd.read_csv(pulsefrac_path, delim_whitespace=True, names=['E','compton_event','a100','a100_err'])
 
     def make_polar(self, spicorr, compnorm=1):
@@ -71,7 +71,7 @@ class Polarigram:
         c,sig_c = result.best_values['C'], result.data.std()#result.params.get('C').stderr
         z2 = (self.n_pola_bands*c**2)/(2*sig_c**2)
         a_up = np.sqrt(-(1/z2)*np.log(p + np.exp(-z2*a100**2)))
-        if verbose: print('upper-limits: a0:{0:.3f}, PF:{1:.3f}'.format(a_up, a_up/a100))
+        if verbose: print(f'upper-limits: a0:{a_up:.3f}, PF:{a_up/a100:.3f}')
         return a_up
     
     def phi_to_pa(self, phi_0, pa_mod):
@@ -110,7 +110,7 @@ class Polarigram:
         # print('a0= {0} a100= {1}'.format(a0, a100))
         if verbose:
             print('p unpola=', p_higher)
-            print('{0:.2f}-sigma detection'.format(sigma_higher))
+            print(f'{sigma_higher:.2f}-sigma detection')
         return p_higher, sigma_higher
     
     def fit_pola(self, bands, p_uplim=0.01, folded=1, weighted=True, pa_mod=None, verbose=True, article=False):
@@ -155,7 +155,7 @@ class Polarigram:
         if weighted: # does not change result since y_err is pretty much constant, but gives chi2 value
             result = gmodel.fit(y, par_pola, x=x_pola, weights=1/y_err)
             result_nopola = gmodel_nopola.fit(y, par_nopola, x=x_pola, weights=1/y_err)
-            print('reduced chi2: pola={0}, no pola={1}'.format(result.redchi, result_nopola.redchi))
+            print(f'reduced chi2: pola={result.redchi}, no pola={result_nopola.redchi}')
         else: result = gmodel.fit(y, par_pola, x=x_pola)
 
         # find all relevant polarization parameters and save them in dico
@@ -173,7 +173,7 @@ class Polarigram:
             x_model_360=np.linspace(np.min(x_pola), 360, num=500)
             fig, ax = plt.subplots(figsize=(8,5))
             label_font=15
-            label_fit='PA = {:.1f} ± {:.1f} °\nPF = {:.2f} ± {:.2f} %\nSNR = {:.1f}'.format(PA, PA_err, PF*100, PF_err*100, SNR)
+            label_fit=f'PA = {PA:.1f} ± {PA_err:.1f} °\nPF = {PF*100:.2f} ± {PF_err*100:.2f} %\nSNR = {SNR:.1f}'
             label_data=''
             ax.axhline(y=result.best_values['C'],color='grey',ls='--')
             ax.axhline(y=0,color='k')
@@ -188,11 +188,11 @@ class Polarigram:
             ax.set_xlabel('$\phi$ (°)');ax.set_ylabel(r'Counts s$^{-1}$ rad$^{-1}$')
             plt.legend(loc='best',fontsize=14);plt.grid(True);plt.show()
 
-            print('mean flux = {0} ± {1} ct/s/rad'.format(np.mean(y), np.std(y)),' a0*C={0}'.format(result.best_values['a0']*result.best_values['C']))
-            print('total flux = {0:.4f} ± {1:.4f} ct/s'.format(flux, flux_err))
-            print('SNR = {0:.1f} P(no pola) = {1:.5f} -> {2:.1f}-sigma detection'.format(SNR, p_higher, sigma_higher))
-            # print('a0 = {0:.3f},  a100 = {1:.3f}'.format(result.best_values['a0'],a100))
-            print('PA = {0:.1f} ± {1:.1f}\nPF = {0:.2f} ± {1:.2f}'.format(PA, PA_err, PF, PF_err))
+            print(f'mean flux = {np.mean(y)} ± {np.std(y)} ct/s/rad') # 'a0*C={result.best_values['a0']*result.best_values['C']}'
+            print(f'total flux = {flux:.4f} ± {flux_err:.4f} ct/s')
+            print(f'SNR = {SNR:.1f} P(no pola) = {p_higher:.5f} -> {sigma_higher:.1f}-sigma detection')
+            # print('a0 = {result.best_values['a0']:.3f},  a100 = {a100:.3f}')
+            print(f'PA = {PA:.1f} ± {PA_err:.1f}\nPF = {PF:.2f} ± {PF_err:.2f}')
 
         return pola_param
     
@@ -214,7 +214,7 @@ class Polarigram:
                     list_pola_param.append(pola_param)
 
             except ValueError: # this can happen for empty energy bands or negative flux
-                print('nan value in fit for {} - {} keV band'.format(Emin, Emax))
+                print(f'nan value in fit for {Emin} - {Emax} keV band')
                 continue
 
         # create df with parameters of each polarigram
@@ -234,7 +234,7 @@ class Polarigram:
         PA_std, PF_std = self.df_pola_param[['PA','PF']].std()
         # Polarization Angle (PA) = upper plot
         ax[0].errorbar('E_mean', 'PA', yerr='PA_err', xerr='dE', fmt=fmt, data=self.df_pola_param, label=None)
-        ax[0].axhline(PA_mean, linestyle='--', c='k', label='Average PA = {0:.1f} ± {1:.1f} °'.format(PA_mean,PA_std))
+        ax[0].axhline(PA_mean, linestyle='--', c='k', label=f'Average PA = {PA_mean:.1f} ± {PA_std:.1f} °')
         ax[0].set_ylabel('PA (°)')
         # ax[0].tick_params(labelbottom=False) 
         ax[0].legend(loc='upper right')#;ax[1].legend()#
@@ -242,7 +242,7 @@ class Polarigram:
         if plot_percent: ax[1].errorbar('E_mean','PF_pct',yerr='PF_err_pct',xerr='dE',fmt=fmt,  data=self.df_pola_param,label=None, uplims=self.df_pola_param['uplim_pct'])
         else: ax[1].errorbar('E_mean','PF',yerr='PF_err',xerr='dE',fmt=fmt,  data=self.df_pola_param,label=None, uplims=self.df_pola_param['uplim'])
 
-        #ax[1].axhline(PF_mean,linestyle='--',c='k',label='Average PF = {0:.2f} ± {1:.2f}'.format(PF_mean, PF_std))
+        #ax[1].axhline(PF_mean,linestyle='--',c='k',label=f'Average PF = {PF_mean:.2f} ± {PF_std:.2f}')
         ax[1].set_ylabel('PF' + plot_percent*' (%)')
         # ax[1].set_ylim(bottom=0,top=1.)
         ax[0].set_xlim(ax[1].get_xlim()) # to have the same x axis in case there are upper-limits
