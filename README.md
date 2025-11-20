@@ -3,9 +3,10 @@ The COMIBIS python library was made for polarization analysis of processed INTEG
 # Installation
 
 The main classes and functions are found in the 'comibis' directory, while the notebook will allow for quick analysis. Optionally, the library can be installed with:
+```console
 python setup.py bdist_wheel
-pip install dist/comibis-0.1-py3-none-any.whl
-
+pip install dist/comibis-1.0-py3-none-any.whl
+```
 Required libraries: numpy, pandas, astropy, matplotlib, scipy, lmfit, arviz
 Optional: iminuit
 
