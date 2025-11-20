@@ -4,10 +4,7 @@ Classes and functions for IBIS/Compton mode polarization analysis
 
 from comibis.utils import *
 import lmfit as lm
-from scipy.stats import norm, chi2 # norm to convert p-value to sigma, chi2 to find contour levels
-from scipy.integrate import dblquad, quad
-from scipy.optimize import root_scalar, least_squares
-from scipy.stats import rice # Rice distribution
+from scipy.stats import norm, chi2, rice 
 from arviz import hdi # error computation from marginalized posterior
 # error computation from likelihood
 try:

@@ -3,9 +3,8 @@ Classes and functions for IBIS/Compton mode spectral analysis
 """
 
 from comibis.utils import *
-import lmfit as lm
-from tqdm import tqdm
 from datetime import datetime
+import lmfit as lm
 from astropy.io import fits
 from astropy.table import Table
 from matplotlib.ticker import LogFormatter
@@ -278,7 +277,8 @@ def plot_spec_model(spectrum, model, e_min_fit, e_max_fit, spec_type='RATE', res
         axes[1,0].errorbar(x='E', xerr='E_ERR', y=res_type, yerr=res_type+'_ERR', fmt='k.', data=df_spec_compton_fit)
         axes[1,0].axhline(res_dico[res_type][0], color='grey', linestyle='--')
         axes[1,0].set_ylabel(res_dico[res_type][1]);axes[1,0].set_xscale('log')
-        # to show the energies on (some) minor ticks, and with the full numbers instead of power of 10
+        
+    # to show the energies on (some) minor ticks, and with the full numbers instead of power of 10
     formatter = LogFormatter(labelOnlyBase=False, minor_thresholds=(3, 0.4))
     axes[0,0].yaxis.set_minor_formatter(formatter)
     axes[0,0].yaxis.set_major_formatter(formatter)
