@@ -20,8 +20,14 @@ So far the only available data is for the 2023 outburst of MQ Swift J1727.8-1613
 
 The next step allows you to make more selections on the scw you will use (date, off-axis angle, revolutions, your own scw list, etc...).
 
-The last step will build the polarigram and compute the associated Polarization Angle (PA) and Fraction (PF). This can be done for different energy bands and displayed on a plot.
+## Polarization
+
+Polarigrams are built and associated Polarization Angle (PA) and Fraction (PF) can be computed. This can be done for different energy bands and displayed on a plot, or for a single polarigram.
 
 The time evolution of polarization parameters is also possible, by groups of rev or years.
 
 NB: Some results may vary from reference papers since IBIS calibration files and methods have been updated throughout the years.
+
+## Spectrum
+
+From the same data, a spectrum can be built and fitted with the lmfit library using different basic models (powerlaw, cut-off powerlaw, ...). More models can be added by hand in the 'calc_model_flux' function of the 'spec' module. The spectrum can also be saved as a FITS file with the 'save_spec' method, although in that case a re-binned response matrix will be required.
