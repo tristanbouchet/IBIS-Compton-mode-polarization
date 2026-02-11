@@ -1,4 +1,4 @@
-The COMIBIS python library was made for polarization analysis of processed INTEGRAL/IBIS Compton data obtained from the C++ Compton mode pipeline (not included here). Details can be found in "Inflight calibration of IBIS Compton mode" (Bouchet et al.).
+The COMIBIS python library was made for polarization analysis of processed INTEGRAL/IBIS Compton mode data obtained from the C++ Compton mode pipeline (not included here). Details can be found in the inflight calibration paper ([Bouchet et al. 2026](https://arxiv.org/abs/2602.09886)).
 
 # Installation
 
@@ -30,4 +30,4 @@ NB: Some results may vary from reference papers since IBIS calibration files and
 
 ## Spectrum
 
-From the same data, a spectrum can be built and fitted with the lmfit library using different basic models (powerlaw, cut-off powerlaw, ...). More models can be added by hand in the 'calc_model_flux' function of the 'spec' module. The spectrum can also be saved as a FITS file with the 'save_spec' method, although in that case a re-binned response matrix will be required.
+From the same data, a spectrum can be built and fitted with the lmfit library using different basic models (powerlaw, cut-off powerlaw, ...). More models can be added by hand in the 'calc_model_flux' function of the 'spec' module. The spectrum can also be saved as a FITS file with the 'save_spec' method; in that case a re-binned response matrix will be required.
