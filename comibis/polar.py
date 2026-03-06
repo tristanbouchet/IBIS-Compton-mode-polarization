@@ -4,7 +4,8 @@ Classes and functions for IBIS/Compton mode polarization analysis
 
 from comibis.utils import *
 import lmfit as lm
-from scipy.stats import norm, chi2, rice 
+from scipy.stats import norm, chi2, rice
+from scipy.special import erf
 from arviz import hdi # error computation from marginalized posterior
 # error computation from likelihood
 try:
@@ -42,10 +43,19 @@ def p_to_nsigma(p_unpola):
     '''
     return norm.isf(p_unpola/2)
 
+def pa_margin_fct(pa, pa0, pf0, sig2):
+    '''
+    marginalized function of PA for uniform prior
+    this is not normalized
+    '''
+    y = np.cos(2 * (pa - pa0))
+    return np.exp((pf0*y)**2/(2*sig2)) * ( erf((pf0*y)/np.sqrt(2*sig2)) + erf((1-pf0*y)/np.sqrt(2*sig2)))
+
 def find_error_interval(x_grid, pdf, x_mode, p=.68):
-    '''symmetric error at p confidence around the mode
+    '''
+    symmetric error at p confidence around the mode
     the cummulative sum is taken above the mode, since the PDF does not have a start for cyclic variables like PA
-    (should be re-written with cyclic behavior)
+    the trick is to always use PA=0° to avoid problems with cyclic behavior near boundaries
     '''
     upper_grid = x_grid > x_mode # to select upper part of PDF
     upper_pdf_cumsum = np.cumsum(pdf[upper_grid])
@@ -162,20 +172,16 @@ class Polarigram:
         pf_lo, pf_hi = hdi(samples, hdi_prob = p_err)
         return pf_mode, pf_mode - pf_lo, pf_hi - pf_mode # pf_lo_err, pf_hi_err
     
-    def pa_margin(self, pa0, pf0, sig2, pa_ref, n_grid_pa = 3600, n_grid_pf = 100, p_err=.68):
+    def pa_margin(self, pa0, pf0, sig2, n_grid_pa = 5000, p_err=.68):
         '''find the symmetric errors of PA from marginalized proba
-        PF does not need a fine binning, as it gets summed
+        marginalized posterior is built with PA=0°, since the distribution is periodic
+        this avoids boundaries problems
         '''
-        post_weiss = make_posterior_polar(pa0*deg_to_rad, pf0, sig2) # posterior likelihood function
-        if pa_ref=='PA_ref90': pa_grid= np.linspace(0, np.pi, n_grid_pa)
-        if pa_ref=='PA_ref0': pa_grid= np.linspace(-np.pi/2, np.pi/2, n_grid_pa)
-        pf_grid = np.linspace(0, 1, n_grid_pf)
-        post_grid = np.array([[post_weiss(pa, pf) for pa in pa_grid] for pf in pf_grid])
-        pa_margin_dist = post_grid.sum(axis=0) 
-        pa_margin_dist /= pa_margin_dist.sum() # poster PDF marginalized on a = poster of phi
-        pa_mode = pa_grid[np.argmax(pa_margin_dist)] # mode should be same as phi0
-        pa_err = find_error_interval(pa_grid, pa_margin_dist, pa_mode, p_err)
-        return pa_mode * rad_to_deg, pa_err * rad_to_deg
+        pa_grid = np.linspace(-np.pi/2, np.pi/2, n_grid_pa) # build PA grid around 0°
+        pa_margin_dist = pa_margin_fct(pa_grid, 0, pf0, sig2) # use analytical form of marginalized PDF over PF
+        pa_margin_dist /= pa_margin_dist.sum() # normalize
+        pa_err = find_error_interval(pa_grid, pa_margin_dist, 0., p_err) # the mode is at 0°, by definition
+        return pa0 , pa_err * rad_to_deg
     
     def error_nll(self, a0, phi0, k2, a100):
         '''find the correct high/low errors (at 1-sigma) from the likelihood
@@ -243,7 +249,7 @@ class Polarigram:
         if p_higher < p_det: # if polarization is detected, (a0,phi0) from fit are kept
             uplim = 0
             PF, PF_lo_err, PF_hi_err = self.pf_margin(pf0, self.pola_param['sig2'])
-            PA, PA_err = self.pa_margin(pa0, pf0, self.pola_param['sig2'], pa_ref)
+            PA, PA_err = self.pa_margin(pa0, pf0, self.pola_param['sig2'])
             lolim = PF + PF_hi_err > 1 - 1e-3 # upper-error stuck at 1
             if lolim:
                 PF = PF - PF_lo_err # PF is now defined as the lower bound at 68%
@@ -607,7 +613,7 @@ def plot_pola_select(df_pola_param, src_info_list, plot_percent=True, with_proba
         ax[2].set_ylim(bottom=0.)
     
     if with_expo:
-        ax[2].errorbar(x=f'{date_type}_MID', xerr=f'{date_type}_ERR', y='Expo (ks)',fmt='gs', data=df_pola_param,label=None)
+        ax[2].errorbar(x=f'{date_type}_MID', xerr=f'{date_type}_ERR', y='EXPO',fmt='gs', data=df_pola_param,label=None)
         ax[2].set_ylabel('Exposure (ks)')
         ax[2].set_xlim(ax[1].get_xlim())
         ax[2].grid(True)
